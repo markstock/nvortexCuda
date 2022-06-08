@@ -23,7 +23,10 @@ in a coalesced manner before all threads operate on that block. This program rep
 "80" part of the "80-20 rule": that you can go most of the way with some simple methods.
 
 Program `nvCuda03` adds some enhancements in an attempt to eke out even more performance, though
-only on the GPU side.
+only on the GPU side. First, we moved the GPU timers to not count allocation and deallocation,
+in order to be more consistent with the CPU timers. Second, we now break the computation up
+along the source-particle dimension, to allow for greater concurrency, which requires `atomicAdd`
+to write results back to main GPU memory. Finally, we added support for multiple GPU systems.
 
 ## Other codes
 If you want to see how other libraries and methodologies improve performance on this problem,
