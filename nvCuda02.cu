@@ -205,7 +205,6 @@ int main(int argc, char **argv) {
   dtx = dsx;
   dty = dsy;
   dtr = dsr;
-  cudaDeviceSynchronize();
 
   for (int32_t nstrm=0; nstrm<nstreams; ++nstrm) {
 
@@ -213,16 +212,13 @@ int main(int argc, char **argv) {
     //const int32_t thisgpu = nstrm % ngpus;
     //cudaSetDevice(0);
 
-    const int32_t ntb = npfull / THREADS_PER_BLOCK;
-    //const dim3 threads(THREADS_PER_BLOCK,1,1);
-    //const dim3 blocks(ntb,1,1);
+    const dim3 threads(THREADS_PER_BLOCK, 1, 1);
+    const dim3 blocks(npfull/THREADS_PER_BLOCK, 1, 1);
 
     // move the data
 
     // launch the kernel
-    //nvortex_2d_nograds_gpu<<<blocks,threads>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
-    nvortex_2d_nograds_gpu<<<ntb,THREADS_PER_BLOCK>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
-    cudaDeviceSynchronize();
+    nvortex_2d_nograds_gpu<<<blocks,threads>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
 
     // check
     auto err = cudaGetLastError();
@@ -234,7 +230,6 @@ int main(int argc, char **argv) {
     // pull data back down
     cudaMemcpy (htu.data(), dtu, trgsize, cudaMemcpyDeviceToHost);
     cudaMemcpy (htv.data(), dtv, trgsize, cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize();
   }
 
   // join streams
