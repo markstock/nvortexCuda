@@ -25,4 +25,10 @@ in a coalesced manner before all threads operate on that block. This program rep
 Program `nvCuda03` adds some enhancements in an attempt to eke out even more performance, though
 only on the GPU side.
 
+## Other codes
+If you want to see how other libraries and methodologies improve performance on this problem,
+look at some of my other repositories:
 
+    [nvortexVc](https://github.com/Applied-Scientific-Research/nvortexVc) - using [Vc](https://github.com/VcDevel/Vc) for explicit vectorization
+    [onbody](https://github.com/Applied-Scientific-Research/onbody) - using CPU treecodes with better order of operations
+    [Omega2D](https://github.com/Applied-Scientific-Research/Omega2D) - a complete 2D vortex methods simulator
