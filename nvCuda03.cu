@@ -132,7 +132,7 @@ __host__ int32_t buffer(const int32_t _n, const int32_t _align) {
 int main(int argc, char **argv) {
 
   // number of particles/points
-  const int32_t npart = 100000;
+  const int32_t npart = 400000;
   printf( "performing 2D vortex Biot-Savart on %d points\n", npart);
 
   // number of GPUs present
