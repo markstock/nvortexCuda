@@ -29,6 +29,6 @@ only on the GPU side.
 If you want to see how other libraries and methodologies improve performance on this problem,
 look at some of my other repositories:
 
-    [nvortexVc](https://github.com/Applied-Scientific-Research/nvortexVc) - using [Vc](https://github.com/VcDevel/Vc) for explicit vectorization
-    [onbody](https://github.com/Applied-Scientific-Research/onbody) - using CPU treecodes with better order of operations
-    [Omega2D](https://github.com/Applied-Scientific-Research/Omega2D) - a complete 2D vortex methods simulator
+* [nvortexVc](https://github.com/Applied-Scientific-Research/nvortexVc) - using [Vc](https://github.com/VcDevel/Vc) for explicit vectorization
+* [onbody](https://github.com/Applied-Scientific-Research/onbody) - using CPU treecodes with better order of operations
+* [Omega2D](https://github.com/Applied-Scientific-Research/Omega2D) - a complete 2D vortex methods simulator
