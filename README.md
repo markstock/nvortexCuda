@@ -28,6 +28,10 @@ in order to be more consistent with the CPU timers. Second, we now break the com
 along the source-particle dimension, to allow for greater concurrency, which requires `atomicAdd`
 to write results back to main GPU memory. Finally, we added support for multiple GPU systems.
 
+Finally, `nvCuda04` saves one flop per inner loop by presquaring the target radius, but adds 
+six more by performing Kahan summation on the accumulators. This further reduces errors inherent
+in summing large arrays of numbers, but seems incompatible with the `omp simd` clause.
+
 ## Other codes
 If you want to see how other libraries and methodologies improve performance on this problem,
 look at some of my other repositories:
