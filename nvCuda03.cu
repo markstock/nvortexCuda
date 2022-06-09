@@ -69,7 +69,7 @@ __global__ void nvortex_2d_nograds_gpu(
       FLOAT dx = s_sx[j] - tx[i];
       FLOAT dy = s_sy[j] - ty[i];
       FLOAT distsq = dx*dx + dy*dy + s_sr[j]*s_sr[j] + tr[i]*tr[i];
-      // consider __fdividef(x, y) ?
+      // we get __fdividef(x, y) with --use_fast_math it seems
       FLOAT factor = s_ss[j] / distsq;
       locu += dy * factor;
       locv -= dx * factor;
