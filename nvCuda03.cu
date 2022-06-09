@@ -138,6 +138,7 @@ int main(int argc, char **argv) {
   // number of GPUs present
   int32_t ngpus = 1;
   cudaGetDeviceCount(&ngpus);
+  //ngpus = 1;	// Force 1 GPU
   // number of cuda streams to break work into
   int32_t nstreams = std::min(MAX_GPUS, ngpus);
   printf( "  ngpus ( %d )  and nstreams ( %d )\n", ngpus, nstreams);
@@ -248,28 +249,36 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Failed to upload data (other): %s!\n", cudaGetErrorString(memerr));
       exit(EXIT_FAILURE);
     }
+  }
 
     const dim3 blocksz(THREADS_PER_BLOCK, 1, 1);
     const dim3 gridsz(ntargperstrm/THREADS_PER_BLOCK, nsrcblocks, 1);
 
+  for (int32_t i=0; i<nstreams; ++i) {
     // launch the kernel
-    nvortex_2d_nograds_gpu<<<gridsz,blocksz>>>(nsrcpad, dsx[i],dsy[i],dss[i],dsr[i],
+    cudaSetDevice(i);
+    nvortex_2d_nograds_gpu<<<gridsz,blocksz,0,stream[i]>>>(nsrcpad, dsx[i],dsy[i],dss[i],dsr[i],
                                                0,dtx[i],dty[i],dtr[i],dtu[i],dtv[i]);
 
     // check
     auto err = cudaGetLastError();
     if (err != cudaSuccess) {
-      fprintf(stderr, "Failed to launch kernel: %s!\n", cudaGetErrorString(err));
+      fprintf(stderr, "Failed to launch kernel (%d): %s!\n", i, cudaGetErrorString(err));
       exit(EXIT_FAILURE);
     }
+  }
 
+  for (int32_t i=0; i<nstreams; ++i) {
     // pull data back down
     cudaMemcpyAsync (htu.data() + i*ntargperstrm, dtu[i], trgsize, cudaMemcpyDeviceToHost, stream[i]);
     cudaMemcpyAsync (htv.data() + i*ntargperstrm, dtv[i], trgsize, cudaMemcpyDeviceToHost, stream[i]);
-
   }
 
   // join streams
+  for (int32_t i=0; i<nstreams; ++i) {
+    cudaStreamSynchronize(stream[i]);
+  }
+  //cudaDeviceSynchronize();
 
   // time and report
   end = std::chrono::system_clock::now();
@@ -286,6 +295,7 @@ int main(int argc, char **argv) {
     cudaFree(dsr[i]);
     cudaFree(dtu[i]);
     cudaFree(dtv[i]);
+    cudaStreamDestroy(stream[i]);
   }
 
   // compare results
