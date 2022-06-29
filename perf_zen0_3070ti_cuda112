@@ -1,0 +1,29 @@
+Performance timing on 3070Ti, CUDA 11.2, GCC 9.3.1
+
+./nvCuda01.bin
+
+n		ngpu	tcpu	gfcpu	tgpu	gfgpu
+100k	1		0.80135	174.705	0.12671	1104.89
+
+
+./nvCuda02.bin
+
+n		ngpu	tcpu	gfcpu	tgpu	gfgpu
+200k	1		0.54205	1033.11	0.13963	4010.5
+
+
+./nvCuda03.bin
+
+n		ngpu	tcpu	gfcpu	tgpu	gfgpu
+200k	1		0.54110	1034.92	0.04961	11286.4
+400k	1		2.20395	1016.36	0.19609	11422.8
+800k	1		15.3438	583.951	0.77454	11568.1
+
+
+./nvCuda04.bin
+
+n		ngpu	tcpu	gfcpu	tgpu	gfgpu
+400k	1		35.3261	86.0555	0.29090	10450
+
+
+
