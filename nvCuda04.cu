@@ -169,10 +169,26 @@ __host__ int32_t buffer(const int32_t _n, const int32_t _align) {
   return _align*(1+(_n-1)/_align);
 }
 
+// main program
+
+static void usage() {
+  fprintf(stderr, "Usage: nvCuda04 [-n=<number>]\n");
+  exit(1);
+}
+
 int main(int argc, char **argv) {
 
   // number of particles/points
-  const int32_t npart = 400000;
+  int32_t npart = 400000;
+
+  if (argc > 1) {
+    if (strncmp(argv[1], "-n=", 3) == 0) {
+      int num = atoi(argv[1] + 3);
+      if (num < 1) usage();
+      npart = num;
+    }
+  }
+
   printf( "performing 2D vortex Biot-Savart on %d points\n", npart);
 
   // number of GPUs present

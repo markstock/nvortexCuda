@@ -103,10 +103,26 @@ __host__ int32_t buffer(const int32_t _n, const int32_t _align) {
   return _align*(1+(_n-1)/_align);
 }
 
+// main program
+
+static void usage() {
+  fprintf(stderr, "Usage: nvCuda01 [-n=<number>]\n");
+  exit(1);
+}
+
 int main(int argc, char **argv) {
 
   // number of particles/points
-  const int32_t npart = 100000;
+  int32_t npart = 100000;
+
+  if (argc > 1) {
+    if (strncmp(argv[1], "-n=", 3) == 0) {
+      int num = atoi(argv[1] + 3);
+      if (num < 1) usage();
+      npart = num;
+    }
+  }
+
   printf( "performing 2D vortex Biot-Savart on %d points\n", npart);
 
   // number of GPUs present
@@ -196,15 +212,13 @@ int main(int argc, char **argv) {
     //const int32_t thisgpu = nstrm % ngpus;
     //cudaSetDevice(0);
 
-    const int32_t ntb = npfull / THREADS_PER_BLOCK;
-    //const dim3 threads(THREADS_PER_BLOCK,1,1);
-    //const dim3 blocks(ntb,1,1);
+    const dim3 blocks(npfull/THREADS_PER_BLOCK, 1, 1);
+    const dim3 threads(THREADS_PER_BLOCK, 1, 1);
 
     // move the data
 
     // launch the kernel
-    //nvortex_2d_nograds_gpu<<<blocks,threads>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
-    nvortex_2d_nograds_gpu<<<ntb,THREADS_PER_BLOCK>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
+    nvortex_2d_nograds_gpu<<<blocks,threads>>>(nperstrm, dsx,dsy,dss,dsr, 0,dtx,dty,dtr,dtu,dtv);
     cudaDeviceSynchronize();
 
     // check

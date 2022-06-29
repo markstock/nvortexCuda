@@ -120,10 +120,26 @@ __host__ int32_t buffer(const int32_t _n, const int32_t _align) {
   return _align*(1+(_n-1)/_align);
 }
 
+// main program
+
+static void usage() {
+  fprintf(stderr, "Usage: nvCuda02 [-n=<number>]\n");
+  exit(1);
+}
+
 int main(int argc, char **argv) {
 
   // number of particles/points
-  const int32_t npart = 200000;
+  int32_t npart = 200000;
+
+  if (argc > 1) {
+    if (strncmp(argv[1], "-n=", 3) == 0) {
+      int num = atoi(argv[1] + 3);
+      if (num < 1) usage();
+      npart = num;
+    }
+  }
+
   printf( "performing 2D vortex Biot-Savart on %d points\n", npart);
 
   // number of GPUs present
@@ -212,8 +228,8 @@ int main(int argc, char **argv) {
     //const int32_t thisgpu = nstrm % ngpus;
     //cudaSetDevice(0);
 
-    const dim3 threads(THREADS_PER_BLOCK, 1, 1);
     const dim3 blocks(npfull/THREADS_PER_BLOCK, 1, 1);
+    const dim3 threads(THREADS_PER_BLOCK, 1, 1);
 
     // move the data
 
@@ -232,7 +248,12 @@ int main(int argc, char **argv) {
     cudaMemcpy (htv.data(), dtv, trgsize, cudaMemcpyDeviceToHost);
   }
 
-  // join streams
+  // time and report
+  end = std::chrono::system_clock::now();
+  elapsed_seconds = end-start;
+  time = elapsed_seconds.count();
+  printf( "  device total time( %g s ) and flops( %g GFlop/s )\n", time, 1.e-9 * (double)npart*(4+14*(double)npart)/time);
+  printf( "    results ( %g %g %g %g %g %g)\n", htu[0], htv[0], htu[1], htv[1], htu[npart-1], htv[npart-1]);
 
   // free resources
   cudaFree(dsx);
@@ -241,13 +262,6 @@ int main(int argc, char **argv) {
   cudaFree(dsr);
   cudaFree(dtu);
   cudaFree(dtv);
-
-  // time and report
-  end = std::chrono::system_clock::now();
-  elapsed_seconds = end-start;
-  time = elapsed_seconds.count();
-  printf( "  device total time( %g s ) and flops( %g GFlop/s )\n", time, 1.e-9 * (double)npart*(4+14*(double)npart)/time);
-  printf( "    results ( %g %g %g %g %g %g)\n", htu[0], htv[0], htu[1], htv[1], htu[npart-1], htv[npart-1]);
 
   // compare results
   FLOAT errsum = 0.0;
