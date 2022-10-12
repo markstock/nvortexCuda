@@ -17,7 +17,7 @@
 #define FLOAT float
 
 // threads per block (hard coded)
-#define THREADS_PER_BLOCK 128
+#define THREADS_PER_BLOCK 256
 
 // GPU count limit
 #define MAX_GPUS 8
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
 
   // and on each GPU, we parallelize over THREADS_PER_BLOCK targets and nsrcblocks source blocks
   // number of blocks source-wise (break summations over sources into this many chunks)
-  const int32_t nsrcblocks = 16;
+  const int32_t nsrcblocks = 32;
 
   // set stream sizes
   const int32_t nsrcpad = buffer(npart, THREADS_PER_BLOCK*nsrcblocks);
