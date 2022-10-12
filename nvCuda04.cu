@@ -3,7 +3,7 @@
  *
  * (c)2022 Mark J. Stock <markjstock@gmail.com>
  *
- * v0.3  use atomics to expose more concurrency
+ * v0.4  use Kahan summation to improve answer
  */
 
 #include <vector>
@@ -18,7 +18,7 @@
 #define FLOAT float
 
 // threads per block (hard coded)
-#define THREADS_PER_BLOCK 128
+#define THREADS_PER_BLOCK 256
 
 // GPU count limit
 #define MAX_GPUS 8
@@ -90,8 +90,8 @@ __global__ void nvortex_2d_nograds_gpu(
   }
 
   // save into device view with atomics
-  atomicAdd(&tu[i], locu.x / (2.0f*3.1415926536f));
-  atomicAdd(&tv[i], locv.x / (2.0f*3.1415926536f));
+  atomicAdd(&tu[i], (locu.x+locu.y) / (2.0f*3.1415926536f));
+  atomicAdd(&tv[i], (locv.x+locv.y) / (2.0f*3.1415926536f));
 
   return;
 }
@@ -157,8 +157,8 @@ __host__ void nvortex_2d_nograds_cpu(
 
   // save into device view
   // use atomics?!?
-  *tu = locu / (2.0f*3.1415926536f);
-  *tv = locv / (2.0f*3.1415926536f);
+  *tu = (locu+ukah) / (2.0f*3.1415926536f);
+  *tv = (locv+vkah) / (2.0f*3.1415926536f);
 
   return;
 }
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 
   // and on each GPU, we parallelize over THREADS_PER_BLOCK targets and nsrcblocks source blocks
   // number of blocks source-wise (break summations over sources into this many chunks)
-  const int32_t nsrcblocks = 1;
+  const int32_t nsrcblocks = 32;
 
   // set stream sizes
   const int32_t nsrcpad = buffer(npart, THREADS_PER_BLOCK*nsrcblocks);
@@ -307,8 +307,8 @@ int main(int argc, char **argv) {
     }
   }
 
-    const dim3 blocksz(THREADS_PER_BLOCK, 1, 1);
-    const dim3 gridsz(ntargperstrm/THREADS_PER_BLOCK, nsrcblocks, 1);
+  const dim3 blocksz(THREADS_PER_BLOCK, 1, 1);
+  const dim3 gridsz(ntargperstrm/THREADS_PER_BLOCK, nsrcblocks, 1);
 
   for (int32_t i=0; i<nstreams; ++i) {
     // launch the kernel
