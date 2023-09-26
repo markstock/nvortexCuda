@@ -138,14 +138,22 @@ static void usage() {
 
 int main(int argc, char **argv) {
 
-  // number of particles/points
+  // number of particles/points and gpus
   int32_t npart = 400000;
+  int32_t force_ngpus = -1;
+  bool compare = false;
 
-  if (argc > 1) {
-    if (strncmp(argv[1], "-n=", 3) == 0) {
-      int num = atoi(argv[1] + 3);
+  for (int i=1; i<argc; i++) {
+    if (strncmp(argv[i], "-n=", 3) == 0) {
+      int32_t num = atoi(argv[i]+3);
       if (num < 1) usage();
       npart = num;
+    } else if (strncmp(argv[i], "-g=", 3) == 0) {
+      int32_t num = atof(argv[i]+3);
+      if (num < 1 or num > MAX_GPUS) usage();
+      force_ngpus = num;
+    } else if (strncmp(argv[i], "-c", 2) == 0) {
+      compare = true;
     }
   }
 
@@ -154,7 +162,7 @@ int main(int argc, char **argv) {
   // number of GPUs present
   int32_t ngpus = 1;
   cudaGetDeviceCount(&ngpus);
-  //ngpus = 1;	// Force 1 GPU
+  if (force_ngpus > 0) ngpus = force_ngpus;
   // number of cuda streams to break work into
   int32_t nstreams = std::min(MAX_GPUS, ngpus);
   printf( "  ngpus ( %d )  and nstreams ( %d )\n", ngpus, nstreams);
